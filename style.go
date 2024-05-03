@@ -15,7 +15,7 @@ type propKey int
 
 // Available properties.
 const (
-	// bool props come first
+	// Boolean props come first.
 	boldKey propKey = 1 << iota
 	italicKey
 	underlineKey
@@ -27,8 +27,7 @@ const (
 	strikethroughSpacesKey
 	colorWhitespaceKey
 
-	// non-bool props
-
+	// Non-boolean props.
 	foregroundKey
 	backgroundKey
 	widthKey
@@ -405,7 +404,7 @@ func (s Style) RenderWithSeparator(separator string, strs ...string) string {
 	}
 
 	// Padding
-	if !inline { //nolint: nestif
+	if !inline { //nolint:nestif
 		if leftPadding > 0 {
 			var st *termenv.Style
 			if colorWhitespace || styleWhitespace {
@@ -575,7 +574,7 @@ func pad(str string, n int, style *termenv.Style) string {
 	return b.String()
 }
 
-func max(a, b int) int { // nolint:unparam
+func max(a, b int) int { //nolint:unparam
 	if a > b {
 		return a
 	}

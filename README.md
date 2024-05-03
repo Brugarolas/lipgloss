@@ -224,17 +224,17 @@ For more on borders see [the docs][docs].
 
 ## Copying Styles
 
-Just use `Copy()`:
+Just use assignment
 
 ```go
 var style = lipgloss.NewStyle().Foreground(lipgloss.Color("219"))
 
-var wildStyle = style.Copy().Blink(true)
+var wildStyle = style.Blink(true)
 ```
 
-`Copy()` performs a copy on the underlying data structure ensuring that you get
-a true, dereferenced copy of a style. Without copying, it's possible to mutate
-styles.
+Since `Style` data structures contains only primitive types, assigning a style
+to another effectively creates a new copy of the style without mutating the
+original.
 
 ## Inheritance
 
@@ -702,7 +702,8 @@ import (
 lipgloss.SetColorProfile(termenv.TrueColor)
 ```
 
-_Note_: this option limits the flexibility of your application and can cause
+_Note:_ this option limits the flexibility of your application and can cause
+
 ANSI escape codes to be output in cases where that might not be desired. Take
 careful note of your use case and environment before choosing to force a color
 profile.

@@ -11,7 +11,7 @@ import (
 const tabWidthDefault = 4
 
 // Property for a key.
-type propKey int
+type propKey int64
 
 // Available properties.
 const (
@@ -81,7 +81,7 @@ const (
 )
 
 // props is a set of properties.
-type props int
+type props int64
 
 // set sets a property.
 func (p props) set(k propKey) props {
@@ -198,7 +198,7 @@ func (s Style) String() string {
 
 // Copy returns a copy of this style, including any underlying string values.
 //
-// Deprecated: Copy is deprecated and will be removed in a future release.
+// Deprecated: to copy just use assignment (i.e. a := b). All methods also return a new style.
 func (s Style) Copy() Style {
 	return s
 }

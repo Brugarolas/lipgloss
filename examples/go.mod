@@ -1,6 +1,6 @@
 module examples
 
-go 1.17
+go 1.18
 
 replace github.com/charmbracelet/lipgloss => ../
 
@@ -20,6 +20,7 @@ require (
 	github.com/caarlos0/sshmarshal v0.1.0 // indirect
 	github.com/charmbracelet/keygen v0.3.0 // indirect
 	github.com/charmbracelet/x/ansi v0.1.1 // indirect
+	github.com/charmbracelet/x/exp/term v0.0.0-20240408110044-525ba71bb562 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

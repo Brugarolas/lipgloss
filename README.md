@@ -545,6 +545,7 @@ Print the tree.
     src="https://github.com/charmbracelet/lipgloss/assets/245435/811e8b39-124f-48bb-b3dd-e015a65b1065"
   />
 </p>
+
 ### Building
 
 If you need, you can also build trees incrementally:
@@ -556,8 +557,6 @@ for i := 0; i < repeat; i++ {
 	t.Item("Lip Gloss")
 }
 ```
-
-### Building
 
 If you need, you can also build lists incrementally:
 
@@ -654,6 +653,18 @@ Print the list:
     src="https://github.com/charmbracelet/lipgloss/assets/245435/44e37a5b-5124-4f49-a332-1756a355002e"
   />
 </p>
+
+### Building
+
+If you need, you can also build trees incrementally:
+
+```go
+l := list.New()
+
+for i := 0; i < repeat; i++ {
+	l.Item("Lip Gloss")
+}
+```
 ---
 
 ## FAQ

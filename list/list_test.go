@@ -1,6 +1,7 @@
 package list_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -9,6 +10,24 @@ import (
 	"github.com/charmbracelet/lipgloss/list"
 	"github.com/charmbracelet/lipgloss/tree"
 )
+
+// XXX: can't write multi-line examples if the underlying string uses
+// lipgloss.JoinVertical.
+
+func ExampleNew() {
+	list := list.New().
+		Item("First")
+	fmt.Print(list)
+	// Output:• First
+}
+
+func ExampleNew_customEnumerator() {
+	list := list.New().
+		Enumerator(list.Arabic).
+		Item("First")
+	fmt.Print(list)
+	// Output:1. First
+}
 
 func TestList(t *testing.T) {
 	l := list.New().
@@ -40,15 +59,40 @@ func TestSublist(t *testing.T) {
 	l := list.New().
 		Item("Foo").
 		Item("Bar").
-		Item(list.New("Hi", "Hello")).Enumerator(list.Roman).
+		Item(list.New("Hi", "Hello", "Halo").Enumerator(list.Roman)).
 		Item("Qux")
 
 	expected := `
-  I. Foo
- II. Bar
-  • Hi
-  • Hello
-III. Qux
+• Foo
+• Bar
+    I. Hi
+   II. Hello
+  III. Halo
+• Qux
+	`
+	require.Equal(t, expected, l.String())
+}
+
+func TestSublistItems(t *testing.T) {
+	l := list.New(
+		"A",
+		"B",
+		"C",
+		list.New(
+			"D",
+			"E",
+			"F",
+		).Enumerator(list.Roman),
+		"G",
+	)
+	expected := `
+• A
+• B
+• C
+    I. D
+   II. E
+  III. F
+• G
 	`
 	require.Equal(t, expected, l.String())
 }
@@ -56,10 +100,10 @@ III. Qux
 func TestComplexSublist(t *testing.T) {
 	style1 := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("99")).
-		MarginRight(1)
-	style2 := lipgloss.NewStyle().
+		PaddingRight(1)
+	  style2 := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("212")).
-		MarginRight(1)
+		PaddingRight(1)
 
 	l := list.New().
 		Item("Foo").
@@ -276,7 +320,7 @@ func TestEnumeratorsTransform(t *testing.T) {
 	}{
 		"alphabet lower": {
 			enumeration: list.Alphabet,
-			style:       lipgloss.NewStyle().MarginRight(1).Transform(strings.ToLower),
+			style:       lipgloss.NewStyle().PaddingRight(1).Transform(strings.ToLower),
 			expected: `
 a. Foo
 b. Bar
@@ -285,7 +329,7 @@ c. Baz
 		},
 		"arabic)": {
 			enumeration: list.Arabic,
-			style: lipgloss.NewStyle().MarginRight(1).Transform(func(s string) string {
+			style: lipgloss.NewStyle().PaddingRight(1).Transform(func(s string) string {
 				return strings.Replace(s, ".", ")", 1)
 			}),
 			expected: `
@@ -475,7 +519,29 @@ LXXXVIII. Foo
     XCIX. Foo
        C. Foo`, "\n")
 
-	if l.String() != expected {
-		t.Fatalf("expected:\n\n%s\n\ngot:\n\n%s\n", expected, l.String())
-	}
+	require.Equal(t, expected, l.String())
+}
+
+func TestSubListItems(t *testing.T) {
+	l := list.New().Items(
+		"S",
+		list.New().Items("neovim", "vscode"),
+		"HI",
+		list.New().Items([]string{"vim", "doom emacs"}),
+		"Parent 2",
+		list.New().Item("I like fuzzy socks"),
+	)
+
+	expected := `
+• S
+  • neovim
+  • vscode
+• HI
+  • vim
+  • doom emacs
+• Parent 2
+  • I like fuzzy socks
+	`
+
+	require.Equal(t, expected, l.String())
 }

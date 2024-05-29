@@ -35,10 +35,10 @@ func Arabic(_ Data, i int) string {
 
 // Roman is the enumeration for roman numerals listing.
 //
-// /   I. Foo
-// /  II. Bar
-// / III. Baz
-// /  IV. Qux.
+//	  I. Foo
+//	 II. Bar
+//	III. Baz
+//	 IV. Qux.
 func Roman(_ Data, i int) string {
 	var (
 		roman  = []string{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}
@@ -57,30 +57,30 @@ func Roman(_ Data, i int) string {
 
 // Bullet is the enumeration for bullet listing.
 //
-// • Foo
-// • Bar
-// • Baz
-// • Qux.
+//	\• Foo
+//	\• Bar
+//	\• Baz
+//	\• Qux.
 func Bullet(Data, int) string {
 	return "•"
 }
 
 // Asterisk is an enumeration using asterisks.
 //
-// * Foo
-// * Bar
-// * Baz
-// * Qux.
+//	\* Foo
+//	\* Bar
+//	\* Baz
+//	\* Qux.
 func Asterisk(Data, int) string {
 	return "*"
 }
 
 // Dash is an enumeration using dashes.
 //
-// - Foo
-// - Bar
-// - Baz
-// - Qux.
+//	\- Foo
+//	\- Bar
+//	\- Baz
+//	\- Qux.
 func Dash(Data, int) string {
 	return "-"
 }

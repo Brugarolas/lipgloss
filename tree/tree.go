@@ -1,3 +1,27 @@
+// Package tree provides an API to create printable tree-like structures that
+// can be included in any command line application. It goes something like:
+//
+//	t := tree.New().
+//		Root(".").
+//		Item("Item 1").
+//		Item(
+//		tree.New().Root("Item 2").
+//			Item("Item 2.1").
+//			Item("Item 2.2").
+//			Item("Item 2.3"),
+//		).
+//		Item(
+//		tree.New().
+//			Root("Item 3").
+//			Item("Item 3.1").
+//			Item("Item 3.2"),
+//		)
+//
+//	fmt.Println(t)
+//
+// If you're looking to create a list, you can use the list package which wraps
+// the tree package with bulleted enumerations. Trees are fully customizable, so
+// don't be shy, give 'em the 'ol razzle dazzle.
 package tree
 
 import (
@@ -7,35 +31,40 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Node is a node in a tree.
+// Node defines a node in a tree.
 type Node interface {
+	fmt.Stringer
 	Name() string
-	String() string
 	Children() Data
 	Hidden() bool
 }
 
-// StringNode is a node without children.
+// StringNode is a node without children and with a string describing it.
 type StringNode string
 
 // Children conforms with Node.
-// StringNodes have no children.
+//
+// Always returns no children.
 func (StringNode) Children() Data { return nodeData(nil) }
 
 // Name conforms with Node.
+//
 // Returns the value of the string itself.
 func (s StringNode) Name() string { return string(s) }
 
 // Hidden conforms with Node.
+//
 // Always returns false.
 func (s StringNode) Hidden() bool { return false }
 
+// String returns conforms with Stringer.
 func (s StringNode) String() string { return s.Name() }
 
-// Tree implements the Node interface with String data.
+// Tree implements the Node interface.
+// It has a name and, optionally, children.
 type Tree struct { //nolint:revive
 	name         string
-	renderer     *defaultRenderer
+	renderer     *renderer
 	rendererOnce sync.Once
 	children     Data
 	hide         bool
@@ -48,7 +77,7 @@ func (n *Tree) Hidden() bool {
 }
 
 // Hide sets whether or not to hide the tree.
-// This is useful for collapsing / hiding sub-tree.
+// This is useful for collapsing or hiding sub-trees.
 func (n *Tree) Hide(hide bool) *Tree {
 	n.hide = hide
 	return n
@@ -69,8 +98,9 @@ func (n *Tree) OffsetEnd(offset int) *Tree {
 // Name returns the root name of this node.
 func (n *Tree) Name() string { return n.name }
 
+// String conforms with Stringer.
 func (n *Tree) String() string {
-	return n.ensureRenderer().Render(n, true, "")
+	return n.ensureRenderer().render(n, true, "")
 }
 
 // Item appends an item to a list.
@@ -86,10 +116,13 @@ func (n *Tree) String() string {
 //	New().Root("foo").Items(New().Root("bar").Item("zaz"), "qux")
 //
 // The resulting tree would be:
-// ├── foo
-// ├── bar
-// │   └── zaz
-// └── qux
+//
+//	├── foo
+//	├── bar
+//	│   └── zaz
+//	└── qux
+//
+// You may also change the tree style using Enumerator.
 func (n *Tree) Item(item any) *Tree {
 	switch item := item.(type) {
 	case *Tree:
@@ -131,6 +164,10 @@ func (n *Tree) Item(item any) *Tree {
 }
 
 // Items add multiple items to the tree.
+//
+//	t := tree.New().
+//		Root("Nyx").
+//		Items("Qux", "Quux").
 func (n *Tree) Items(items ...any) *Tree {
 	for _, item := range items {
 		n.Item(item)
@@ -166,22 +203,36 @@ func ensureParent(nodes Data, item *Tree) (*Tree, int) {
 	return item, -1
 }
 
-func (n *Tree) ensureRenderer() *defaultRenderer {
+// Ensure the tree node has a renderer.
+func (n *Tree) ensureRenderer() *renderer {
 	n.rendererOnce.Do(func() {
-		n.renderer = newDefaultRenderer()
+		n.renderer = newRenderer()
 	})
 	return n.renderer
 }
 
 // EnumeratorStyle sets the enumeration style.
-// Margins and paddings should usually be set only in ItemStyle/ItemStyleFunc.
+// Margins and paddings should usually be set only in ItemStyle or ItemStyleFunc.
+//
+//	t := tree.New("Duck", "Duck", "Duck", "Goose", "Duck").
+//		EnumeratorStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("#00d787")))
 func (n *Tree) EnumeratorStyle(style lipgloss.Style) *Tree {
 	n.ensureRenderer().style.enumeratorFunc = func(Data, int) lipgloss.Style { return style }
 	return n
 }
 
-// EnumeratorStyleFunc sets the enumeration style function.
+// EnumeratorStyleFunc sets the enumeration style function. Use this function
+// for conditional styling.
+//
 // Margins and paddings should usually be set only in ItemStyle/ItemStyleFunc.
+//
+//	t := tree.New().
+//		EnumeratorStyleFunc(func(_ tree.Data, i int) lipgloss.Style {
+//		    if i == 1 {
+//		        return lipgloss.NewStyle().Foreground(hightlightColor)
+//		    }
+//		    return lipgloss.NewStyle().Foreground(dimColor)
+//		})
 func (n *Tree) EnumeratorStyleFunc(fn StyleFunc) *Tree {
 	if fn == nil {
 		fn = func(Data, int) lipgloss.Style { return lipgloss.NewStyle() }
@@ -191,12 +242,24 @@ func (n *Tree) EnumeratorStyleFunc(fn StyleFunc) *Tree {
 }
 
 // ItemStyle sets the item style.
+//
+//	t := tree.New("Duck", "Duck", "Duck", "Goose", "Duck").
+//		ItemStyle(lipgloss.NewStyle().Foreground(lipgloss.Color(255)))
 func (n *Tree) ItemStyle(style lipgloss.Style) *Tree {
 	n.ensureRenderer().style.itemFunc = func(Data, int) lipgloss.Style { return style }
 	return n
 }
-
-// ItemStyleFunc sets the item style function.
+// ItemStyleFunc sets the item style function. Use this for conditional styling.
+// For example:
+//
+//	t := tree.New().
+//		ItemStyleFunc(func(_ tree.Data, i int) lipgloss.Style {
+//			st := baseStyle.Copy()
+//			if selectedIndex == i {
+//				return st.Foreground(hightlightColor)
+//			}
+//			return st.Foreground(dimColor)
+//		})
 func (n *Tree) ItemStyleFunc(fn StyleFunc) *Tree {
 	if fn == nil {
 		fn = func(Data, int) lipgloss.Style { return lipgloss.NewStyle() }
@@ -205,13 +268,18 @@ func (n *Tree) ItemStyleFunc(fn StyleFunc) *Tree {
 	return n
 }
 
-// Enumerator sets the enumerator implementation.
+// Enumerator sets the enumerator implementation. This can be used to change the way the branches indicators look.
+// Lipgloss includes predefined enumerators including bullets, roman numerals, and more. For
+// example, you can have a numbered list:
+//
+//	tree.New().
+//		Enumerator(Arabic)
 func (n *Tree) Enumerator(enum Enumerator) *Tree {
 	n.ensureRenderer().enumerator = enum
 	return n
 }
 
-// Children returns the children of a string node.
+// Children returns the children of a node.
 func (n *Tree) Children() Data {
 	var data []Node
 	for i := n.offset[0]; i < n.children.Length()-n.offset[1]; i++ {

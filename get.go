@@ -300,7 +300,7 @@ func (s Style) GetBorderTopWidth() int {
 // runes of varying widths, the widest rune is returned. If no border exists on
 // the top edge, 0 is returned.
 func (s Style) GetBorderTopSize() int {
-	if !s.getAsBool(borderTopKey, false) {
+	if !s.getAsBool(borderTopKey, s.autoEnableBorder()) {
 		return 0
 	}
 	return s.getBorderStyle().GetTopSize()
@@ -310,7 +310,7 @@ func (s Style) GetBorderTopSize() int {
 // runes of varying widths, the widest rune is returned. If no border exists on
 // the left edge, 0 is returned.
 func (s Style) GetBorderLeftSize() int {
-	if !s.getAsBool(borderLeftKey, false) {
+	if !s.getAsBool(borderLeftKey, s.autoEnableBorder()) {
 		return 0
 	}
 	return s.getBorderStyle().GetLeftSize()
@@ -320,7 +320,7 @@ func (s Style) GetBorderLeftSize() int {
 // contain runes of varying widths, the widest rune is returned. If no border
 // exists on the left edge, 0 is returned.
 func (s Style) GetBorderBottomSize() int {
-	if !s.getAsBool(borderBottomKey, false) {
+	if !s.getAsBool(borderBottomKey, s.autoEnableBorder()) {
 		return 0
 	}
 	return s.getBorderStyle().GetBottomSize()
@@ -330,7 +330,7 @@ func (s Style) GetBorderBottomSize() int {
 // contain runes of varying widths, the widest rune is returned. If no border
 // exists on the right edge, 0 is returned.
 func (s Style) GetBorderRightSize() int {
-	if !s.getAsBool(borderRightKey, false) {
+	if !s.getAsBool(borderRightKey, s.autoEnableBorder()) {
 		return 0
 	}
 	return s.getBorderStyle().GetRightSize()
@@ -386,12 +386,36 @@ func (s Style) GetStrikethroughSpaces() bool {
 	return s.getAsBool(strikethroughSpacesKey, false)
 }
 
+// GetTopFrameSize returns the sum of the style's top margins, padding
+// and border widths.
+func (s Style) GetTopFrameSize() int {
+	return s.GetMarginTop() + s.GetPaddingTop() + s.GetBorderTopSize()
+}
+
+// GetRightFrameSize returns the sum of the style's right margins, padding
+// and border widths.
+func (s Style) GetRightFrameSize() int {
+	return s.GetMarginRight() + s.GetPaddingRight() + s.GetBorderRightSize()
+}
+
+// GetBottomFrameSize returns the sum of the style's bottom margins, padding
+// and border widths.
+func (s Style) GetBottomFrameSize() int {
+	return s.GetMarginBottom() + s.GetPaddingBottom() + s.GetBorderBottomSize()
+}
+
+// GetLeftFrameSize returns the sum of the style's left margins, padding
+// and border widths.
+func (s Style) GetLeftFrameSize() int {
+	return s.GetMarginLeft() + s.GetPaddingLeft() + s.GetBorderLeftSize()
+}
+
 // GetHorizontalFrameSize returns the sum of the style's horizontal margins, padding
 // and border widths.
 //
 // Provisional: this method may be renamed.
 func (s Style) GetHorizontalFrameSize() int {
-	return s.GetHorizontalMargins() + s.GetHorizontalPadding() + s.GetHorizontalBorderSize()
+	return s.GetRightFrameSize() + s.GetLeftFrameSize()
 }
 
 // GetVerticalFrameSize returns the sum of the style's vertical margins, padding
@@ -399,7 +423,7 @@ func (s Style) GetHorizontalFrameSize() int {
 //
 // Provisional: this method may be renamed.
 func (s Style) GetVerticalFrameSize() int {
-	return s.GetVerticalMargins() + s.GetVerticalPadding() + s.GetVerticalBorderSize()
+	return s.GetTopFrameSize() + s.GetBottomFrameSize()
 }
 
 // GetFrameSize returns the sum of the margins, padding and border width for
@@ -412,6 +436,14 @@ func (s Style) GetFrameSize() (x, y int) {
 // nil is returned.
 func (s Style) GetTransform() func(string) string {
 	return s.getAsTransform(transformKey)
+}
+
+func (s Style) GetBorderInfoStyle() Style {
+	return s.getAsStyle(borderInfoStyleKey)
+}
+
+func (s Style) GetBorderInfoTitle() string {
+	return s.getAsString(borderInfoKey)
 }
 
 // Returns whether or not the given property is set.
@@ -432,7 +464,7 @@ func (s Style) getAsColor(k propKey) TerminalColor {
 	}
 
 	var c TerminalColor
-	switch k { //nolint:exhaustive
+	switch k {
 	case foregroundKey:
 		c = s.fgColor
 	case backgroundKey:
@@ -468,7 +500,7 @@ func (s Style) getAsInt(k propKey) int {
 	if !s.isSet(k) {
 		return 0
 	}
-	switch k { //nolint:exhaustive
+	switch k {
 	case widthKey:
 		return s.width
 	case heightKey:
@@ -503,7 +535,7 @@ func (s Style) getAsPosition(k propKey) Position {
 	if !s.isSet(k) {
 		return Position(0)
 	}
-	switch k { //nolint:exhaustive
+	switch k {
 	case alignHorizontalKey:
 		return s.alignHorizontal
 	case alignVerticalKey:
@@ -524,6 +556,24 @@ func (s Style) getAsTransform(propKey) func(string) string {
 		return nil
 	}
 	return s.transform
+}
+
+func (s Style) getAsString(k propKey) string {
+	if v, ok := s.rules[k]; ok {
+		if s, ok := v.(string); ok {
+			return s
+		}
+	}
+	return ""
+}
+
+func (s Style) getAsStyle(k propKey) Style {
+	if v, ok := s.rules[k]; ok {
+		if s, ok := v.(Style); ok {
+			return s
+		}
+	}
+	return NewStyle()
 }
 
 // Split a string into lines, additionally returning the size of the widest

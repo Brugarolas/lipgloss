@@ -6,7 +6,7 @@ func (s *Style) set(key propKey, value interface{}) {
 	// them at zero or above. We could use uints instead, but the
 	// conversions are a little tedious, so we're sticking with ints for
 	// sake of usability.
-	switch key { //nolint:exhaustive
+	switch key {
 	case foregroundKey:
 		s.fgColor = colorOrNil(value)
 	case backgroundKey:
@@ -66,7 +66,7 @@ func (s *Style) set(key propKey, value interface{}) {
 	case transformKey:
 		s.transform = value.(func(string) string)
 	default:
-		if v, ok := value.(bool); ok { //nolint:nestif
+		if v, ok := value.(bool); ok {
 			if v {
 				s.attrs |= int(key)
 			} else {
@@ -88,7 +88,7 @@ func (s *Style) set(key propKey, value interface{}) {
 
 // setFrom sets the property from another style.
 func (s *Style) setFrom(key propKey, i Style) {
-	switch key { //nolint:exhaustive
+	switch key {
 	case foregroundKey:
 		s.set(foregroundKey, i.fgColor)
 	case backgroundKey:
@@ -586,6 +586,18 @@ func (s Style) BorderBottomBackground(c TerminalColor) Style {
 // border.
 func (s Style) BorderLeftBackground(c TerminalColor) Style {
 	s.set(borderLeftBackgroundKey, c)
+	return s
+}
+
+// BorderInfoStyle set border info style
+func (s Style) BorderInfoStyle(style Style) Style {
+	s.set(borderInfoStyleKey, style)
+	return s
+}
+
+// BorderInfo set border info
+func (s Style) BorderInfo(info string) Style {
+	s.set(borderInfoKey, info)
 	return s
 }
 

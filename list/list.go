@@ -17,6 +17,7 @@
 // The list package provides built-in enumerator styles to help glamourize your
 // lists. This package wraps the tree package with list-specific styling. Lists
 // are fully customizable, so let your creativity flow.
+
 package list
 
 import (
@@ -150,6 +151,8 @@ func (n *List) Items(items ...any) *List {
 //
 //	list.New().
 //		Enumerator(Arabic)
+
+// Enumerator implements Renderer.
 func (n *List) Enumerator(enum Enumerator) *List {
 	n.inner.Enumerator(func(data tree.Data, i int) (string, string) {
 		return " ", enum(data, i)

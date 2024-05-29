@@ -101,7 +101,7 @@ func TestComplexSublist(t *testing.T) {
 	style1 := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("99")).
 		PaddingRight(1)
-	style2 := lipgloss.NewStyle().
+	  style2 := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("212")).
 		PaddingRight(1)
 

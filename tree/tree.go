@@ -249,7 +249,6 @@ func (n *Tree) ItemStyle(style lipgloss.Style) *Tree {
 	n.ensureRenderer().style.itemFunc = func(Data, int) lipgloss.Style { return style }
 	return n
 }
-
 // ItemStyleFunc sets the item style function. Use this for conditional styling.
 // For example:
 //

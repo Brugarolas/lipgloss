@@ -43,7 +43,7 @@ func main() {
 			return " "
 		}).
 		ItemStyleFunc(func(_ tree.Data, i int) lipgloss.Style {
-			st := baseStyle
+			st := baseStyle.Copy()
 			if selectedIndex == i {
 				return st.Foreground(hightlightColor)
 			}

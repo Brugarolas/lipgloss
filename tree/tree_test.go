@@ -820,6 +820,7 @@ func TestMultilinePrefixInception(t *testing.T) {
 		}
 		return "  ", " "
 	}
+
 	paddingsStyle := lipgloss.NewStyle().PaddingLeft(1).PaddingBottom(1)
 	tree := tree.New().
 		Enumerator(glowEnum).
